@@ -66,7 +66,7 @@
 
 - Front-end: Nuxt.js, Tailwind CSS
 - Back-end: 
-- Database: 
+- Database: Supabase
 - QR Code Integration: 
 
 ---
