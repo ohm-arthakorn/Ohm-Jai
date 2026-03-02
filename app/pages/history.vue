@@ -83,7 +83,7 @@ const groupedTransactions = computed(() => {
 
     transactions.value.forEach(tx => {
         // ดึงวันที่จากฟิลด์ created_at มาทำเป็น Date object
-        const dateObj = new Date(tx.created_at)
+        const dateObj = new Date(tx.date)
 
         // จัด Format ของวันที่ให้เป็น Th อย่างสวยงาม
         const dateString = new Intl.DateTimeFormat('th-TH', {
