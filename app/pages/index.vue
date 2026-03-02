@@ -44,12 +44,12 @@
 
             <div class="flex flex-col gap-3">
                 <!-- Empty State -->
-                <div v-if="recentTransactions.length === 0" class="text-center py-8 text-slate-400 text-sm">
+                <div v-if="transactions.length === 0" class="text-center py-8 text-slate-400 text-sm">
                     ยังไม่มีรายการบันทึก
                 </div>
 
                 <!-- List -->
-                <div v-for="tx in recentTransactions" :key="tx.id"
+                <div v-for="tx in transactions" :key="tx.id"
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center"
@@ -90,5 +90,19 @@ const liffProfile = $liff?.profile
 // Limit to 5 recent transactions
 const recentTransactions = computed(() => {
     return allTxs.value.slice(0, 5)
+})
+
+// ดึงข้อมูลจาก Supabase
+const supabase = useSupabaseClient()
+
+// กำหนด Key เป็น history-transactions เพื่อไม่ให้ไปชนกับหน้า Test 
+const { data: transactions, pending, error } = await useAsyncData('history-transactions', async () => {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data
 })
 </script>
