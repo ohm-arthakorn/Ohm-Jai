@@ -13,12 +13,14 @@
     "@line/liff": "^2.27.3",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",
+    "@prisma/client": "^7.6.0",
     "lucide-vue-next": "^0.575.0",
     "nuxt": "^4.3.1",
     "vue": "^3.5.28",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@nuxtjs/supabase": "^2.0.4"
+    "@nuxtjs/supabase": "^2.0.4",
+    "prisma": "^7.6.0"
   }
 }
