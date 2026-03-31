@@ -25,3 +25,5 @@ logs
 
 #document
 docs
+
+/app/generated/prisma
