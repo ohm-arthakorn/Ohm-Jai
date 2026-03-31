@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16 #มีการเรียกใช้งาน PostgreSQL version 16 (อย่าลืมไปหาข้อมูลเรื่องของ PostgreSQL version 16 มาด้วยนะ)
+    container_name: ohm-jai
+    environment: 
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432" #มีการกำหนด port ไว้ที่ 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
