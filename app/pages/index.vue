@@ -9,12 +9,18 @@
                 </h1>
                 <p class="text-sm text-slate-500">สรุปค่าใช้จ่ายเดือนนี้</p>
             </div>
+            
             <div
                 class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
                 <img v-if="liffProfile?.pictureUrl" :src="liffProfile.pictureUrl" alt="Profile"
                     class="w-full h-full object-cover" />
                 <span v-else>{{ liffProfile?.displayName?.charAt(0) || 'O' }}</span>
+                
             </div>
+            <!-- ปุ่มสำหรับการ Log Out -->
+                <button @click="LogOut" class="bg-blue-100">
+                    Log out
+                </button>
         </header>
 
         <!-- ส่วนแสดงยอดคงเหลือ รายรับ รายจ่าย -->
@@ -73,18 +79,28 @@
 </template>
 
 <script setup>
-import { storeToRefs } from 'pinia'
+
+/*
+    function สำหรับการทำระบบ Logout ออกจากระบบ
+*/
+const LogOut = () => {
+    const auth = useCookie('auth_token')   // มีการรับค่าตัวแปร Token จากระบบ auth
+    auth.value = null                       // กำหนดค่าดังกล่าวให้มีค่าเท่ากับว่างเปล่า
+    navigateTo('/login')                    // มีการไปยังหน้า Login
+}
+
+
 import { ArrowDownRight, ArrowUpRight } from 'lucide-vue-next'
-import { useTransactionStore } from '~/stores/useTransactionStore'
+
 import { ref, computed } from 'vue'
-import { useNuxtApp } from 'nuxt/app'
+
 
 const ArrowDownRightIcon = ArrowDownRight
 const ArrowUpRightIcon = ArrowUpRight
 const UserName = "Ohm"
 
-// ดึงข้อมูลจาก Supabase
-const supabase = useSupabaseClient()
+
+
 
 // กำหนด Key เป็น history-transactions เพื่อไม่ให้ไปชนกับหน้า Test 
 const { data: transactions, pending, error } = await useAsyncData('history-transactions', async () => {
