@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// สร้าง Entity ที่มีชื่อว่า Users สำหรับเก็บข้อมูล username, password
+model Users {
+  id Int @id @default(autoincrement())  // 1. UserID
+  username String @unique               // 2. username
+  password String                       // 3. password
+  transactions Transaction[]            // มีการเชื่อมต่อฐานข้อมูลไปยัง Table ที่มีชื่อว่า Transactions โดยมีความสัมพันธ์แบบ 1-M 
+}
+
+// สร้าง Entity ที่มีชื่อว่า Transaction สำหรับการเก็บข้อมูลทางธุรกรรม
+model Transaction {
+  id Int @id @default(autoincrement())  // 1. TransactionID
+  date DateTime                         // 2. Timestamp
+  amount Float                          // 3. amount (จำนวนเงิน)
+  type String                           // 4. type (ประเภท) e.g.รายรับ/รายจ่าย
+  catagory String                       // 5. category (หมวดหมู่) e.g.ค่าข้าว/ค่าขนม
+
+
+  UserId Int
+  user Users @relation(fields: [UserId], references: [id])
+}
