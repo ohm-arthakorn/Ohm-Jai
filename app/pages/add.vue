@@ -1,132 +1,98 @@
 <template>
-    <div class="flex flex-col h-full gap-6">
-        <header>
-            <h1 class="text-2xl font-bold text-slate-800">บันทึกรายการ</h1>
-        </header>
+    <div class="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
+        <!-- ส่วนของ Header  -->
+        <h2 class="text-2xl font-bold mb-4 text-slate-800">บันทึกรายการใหม่</h2>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-1 flex mb-2">
-            <button @click="form.type = 'expense'"
-                class="flex-1 py-2 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-                :class="form.type === 'expense' ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-slate-50'">
-                รายจ่าย
-            </button>
-            <button @click="form.type = 'income'"
-                class="flex-1 py-2 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-                :class="form.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'">
-                รายรับ
-            </button>
-        </div>
+        <!-- ส่วนของ form สำหรับการส่งข้อมูลรายการ e.g. รายรับ หรือรายจ่าย -->
+        <form @submit.prevent="saveTransaction" class="space-y-4">
 
-        <form @submit.prevent="saveTransaction" class="flex flex-col gap-5 flex-1 pb-10">
-            <!-- Amount -->
-            <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">จำนวนเงิน (บาท)</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl">฿</span>
-                    <input v-model="form.amount" type="number" placeholder="0.00" required
-                        class="w-full pl-10 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow" />
-                </div>
+            <!-- ส่วนของการใส่จำนวนเงิน -->
+            <div>
+                <label class="block text-sm font-bold">จำนวนเงิน (บาท)</label>
+                <input v-model="form.amount" type="number" step="0.01" class="w-full border p-2 rounded" required />
             </div>
 
-            <!-- Category -->
-            <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">หมวดหมู่</label>
-                <select v-model="form.category" required
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
-                    <option value="" disabled>เลือกหมวดหมู่</option>
+            <!-- ส่วนของการเลือกประเภทว่าเป็นรายรับ หรือรายจ่าย -->
+            <div class="flex gap-4">
+
+                <!-- ปุ่มสำหรับการเลือกรายรับ จะมีการแสดงให้ปุ่มเป็นสีเขียว ถ้ามีการเลือกรายรับ และมีการระบุตัวแปร form.type = 'income' -->
+                <button @click="form.type = 'income'"
+                    :class="['border p-1 px-4 rounded-lg transition', form.type === 'income' ? 'bg-green-500 text-white shadow' : 'text-slate-600']"
+                    type="button">รายรับ</button>
+
+                <!-- ปุ่มสำหรับการเลือกรายจ่าย จะมีการแสดงให้ปุ่มเป็นสีแดง ถ้ามีการเลือกรายจ่าย และมีการระบุตัวแปร form.type = 'expense' -->
+                <button @click="form.type = 'expense'"
+                    :class="['border p-1 px-4 rounded-lg transition', form.type === 'expense' ? 'bg-red-500 text-white shadow' : 'text-slate-600']"
+                    type="button">รายจ่าย</button>
+            </div>
+
+            <!-- ส่วนของการใส่หมวดหมู่ว่าเป็นประเภทไหน เช่น ค่าเดินทาง ค่าอาหาร -->
+            <div>
+                <label class="block text-sm font-medium">หมวดหมู่</label>
+                <select v-model="form.category" class="w-full border p-2 rounded">
                     <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
             </div>
 
-            <!-- Note -->
-            <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">จดบันทึก (ตัวเลือก)</label>
-                <input v-model="form.note" type="text" placeholder="เช่น ค่าข้าวต้มกุ๊ย"
-                    class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow" />
+            <!-- ส่วนของการใส่วันที่ -->
+            <div>
+                <label class="block text-sm font-medium">วันที่</label>
+                <input v-model="form.date" type="date" class="w-full border p-2 rounded" />
             </div>
 
-            <!-- Submit -->
-
-            <!-- ให้มีการ Return ค่าเป็นวันที่และเวลาที่ได้มีการส่งข้อมูลมาด้วย -->
-            <button type="submit" :disabled="isSubmitting"
-                class="mt-auto w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
-                :class="form.type === 'expense' ? 'bg-red-500 hover:bg-red-600 shadow-red-200 focus:ring-red-500' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200 focus:ring-emerald-500'">
-                {{ isSubmitting ? 'กำลังบันทึก...' : 'บันทึกรายการ' }}
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
+                บันทึกข้อมูล
             </button>
         </form>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'nuxt/app'
-import { useTransactionStore } from '~/stores/useTransactionStore'
-
-const router = useRouter()
-// เรียกใช้งาน Supabase ในเว็บไซต์
-const supabase = useSupabaseClient()
-const store = useTransactionStore()
-
-const isSubmitting = ref(false)
-
+const auth = useCookie('auth_token')    // มีการประกาศตัวแปร auth สำหรับการดึง Cookie 
+// สร้างตัวแปรชื่อ form สำหรับการเป็น Buffer ในการเก็บข้อมูล
 const form = ref({
-    type: 'expense',
-    amount: '',
-    category: '',
-    note: ''
+    amount: 0,          // เก็บจำนวนเงิน (บาท)
+    type: 'expense',    // ประเภทของธุรกรรม e.g. รายรับ/รายจ่าย
+    category: 'อาหาร',  // หมวดหมู่ของธุรกรรม e.g. ค่าเดินทาง ค่าอาหาร etc.
+    date: new Date().toISOString().split('T')[0]
 })
 
-const expenseCategories = ['อาหาร', 'เดินทาง', 'ช้อปปิ้ง', 'บิล/ค่าใช้จ่าย', 'สุขภาพ', 'อื่นๆ']
-const incomeCategories = ['ค่าขนม', 'เงินเดือน', 'ธุรกิจ', 'โบนัส', 'อื่นๆ']
+// สร้างตัวแปรประเภท object สำหรับการเก็บ array 2 ตัวที่ประกอบด้วย income (รายรับ), expense (รายจ่าย)
+const categoryType = {
+    "expense": ["ค่าเดินทาง", "ค่าอาหาร", "เติมเกม", "ซื้อของ", "ซื้อของ 7-11"],
+    "income": ["ค่าขนม", "เงินเดือน", "ค่า TA"],
+}
 
+/*
+    บรรทัดนี้จะมีการสร้างตัวแปรที่มีการเปลี่ยนแปลง array เป็นประเภทที่ได้มีการเลือก
+    เช่น     ถ้า user มีการเลือก 'รายรับ' -> จะมีการเปลี่ยน form.type = 'income'
+            ดังนั้น form.value.type = form.type = 'income'
+            ตัวแปร availableCategories ก็จะมีการเปลี่ยนเป็น categoryType['income'] หรือ []
+*/
 const availableCategories = computed(() => {
-    return form.value.type === 'expense' ? expenseCategories : incomeCategories
+    return categoryType[form.value.type] || []
 })
 
+/*
+    เมื่อมีการเลือกประเภทของธุรกรรมจะมีการเลือก category ตัวแรกให้เสมอ
+*/
+watch(() => form.value.type, (newType) => {
+    form.value.category = categoryType[newType][0]
+}, { immediate: true })
+
+// ฟังก์ชันสำหรับการส่งข้อมูลไปยัง API Transaction เพื่อบันทึกข้อมูลลงฐานข้อมูล
 const saveTransaction = async () => {
-    if (!form.value.amount || !form.value.category) return
-
-    isSubmitting.value = true
-
     try {
-        // 1. บันทึกลง Supabase
-        const { data, error } = await supabase
-            .from('transactions')
-            .insert([
-                {
-                    title: form.value.note || form.value.category, // ถ้าไม่ได้จด note ให้เอา category มาใช้แทน
-                    amount: Number(form.value.amount),
-                    type: form.value.type,
-                    category: form.value.category
-                }
-            ])
-            .select() // เพื่อให้มันรีเทิร์นข้อมูลที่เพิ่ง insert กลับมา
-
-        if (error) {
-            console.error('Error inserting data:', error)
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message)
-            return
-        }
-
-        console.log('Successfully inserted data:', data)
-
-        // 2. อัปเดต State (Pinia) ต่อ เผื่อเอาไปใช้โชว์ที่อื่นแบบไม่ต้องโหลตใหม่
-        store.addTransaction({
-            id: data[0].id, // ใช้ id จาก Supabase
-            type: form.value.type,
-            amount: Number(form.value.amount),
-            category: form.value.category,
-            note: form.value.note,
-            created_at: data[0].created_at // ใช้เวลาจาก Supabase
+        const response = await $fetch('/api/transaction', {
+            method: 'POST',
+            body: {
+                ...form.value,
+                UserId: 4   // ในอนาคตควรจะมีการดึงข้อมูล Users จาก Session/Cookie 
+            }
         })
-
-        // กลับไปหน้าแรก
-        router.push('/')
+        alert('บันทึกรายการสำเร็จ !')
     } catch (err) {
-        console.error('Unexpected error:', err)
-        alert('เกิดข้อผิดพลาดที่ไม่คาดคิด!')
-    } finally {
-        isSubmitting.value = false
+        alert(err)
     }
 }
 </script>
