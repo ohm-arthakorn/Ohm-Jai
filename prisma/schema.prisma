@@ -26,7 +26,7 @@ model Transaction {
   date DateTime                         // 2. Timestamp
   amount Float                          // 3. amount (จำนวนเงิน)
   type String                           // 4. type (ประเภท) e.g.รายรับ/รายจ่าย
-  catagory String                       // 5. category (หมวดหมู่) e.g.ค่าข้าว/ค่าขนม
+  category String                       // 5. category (หมวดหมู่) e.g.ค่าข้าว/ค่าขนม
 
 
   UserId Int
