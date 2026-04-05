@@ -9,34 +9,36 @@
                 </h1>
                 <p class="text-sm text-slate-500">สรุปค่าใช้จ่ายเดือนนี้</p>
             </div>
-            
-            <div
-                class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
-                <img v-if="liffProfile?.pictureUrl" :src="liffProfile.pictureUrl" alt="Profile"
-                    class="w-full h-full object-cover" />
-                <span v-else>{{ liffProfile?.displayName?.charAt(0) || 'O' }}</span>
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
+                    <img v-if="liffProfile?.pictureUrl" :src="liffProfile.pictureUrl" alt="Profile"
+                        class="w-full h-full object-cover" />
+                    <span v-else>{{ liffProfile?.displayName?.charAt(0) || 'O' }}</span>
+                </div>
                 
-            </div>
-            <!-- ปุ่มสำหรับการ Log Out -->
-                <button @click="LogOut" class="bg-blue-100">
-                    Log out
+                <!-- ปุ่มสำหรับการ Log Out  -->
+                <button @click="LogOut" title="ออกจากระบบ"
+                    class="w-10 h-10 flex items-center justify-center bg-white text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors shadow-sm border border-slate-100">
+                    <LogOutIcon class="w-5 h-5 ml-1" />
                 </button>
+            </div>
         </header>
 
         <!-- ส่วนแสดงยอดคงเหลือ รายรับ รายจ่าย -->
         <section
             class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-200">
             <div class="mb-4">
-                <p class="text-blue-100 text-sm mb-1">ยอดคงเหลือรวม</p>
+                <p class="text-blue-100 text-m mb-1">ยอดคงเหลือรวม</p>
                 <h2 class="text-4xl font-bold">฿{{ balance }}</h2>
             </div>
             <div class="flex gap-4 pt-4 border-t border-blue-500/50">
                 <div class="flex-1">
-                    <p class="text-blue-200 text-xs mb-1">รายรับ</p>
+                    <p class="text-blue-200 text-s mb-1">รายรับ</p>
                     <p class="font-semibold text-sm">฿{{ income }}</p>
                 </div>
                 <div class="flex-1">
-                    <p class="text-blue-200 text-xs mb-1">รายจ่าย</p>
+                    <p class="text-blue-200 text-s mb-1">รายจ่าย</p>
                     <p class="font-semibold text-sm">฿{{ expense }}</p>
                 </div>
             </div>
@@ -56,7 +58,8 @@
                 </div>
 
                 <!-- List -->
-                <div v-for="tx in transactions" :key="tx.id"
+                 <!-- TODO: ทำการหั่น Array ด้วย slice(0, 3) เพื่อดึงมาแค่ 3 รายการแรก -->
+                <div v-for="tx in transactions.slice(0, 3)" :key="tx.id" 
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center"
@@ -66,7 +69,7 @@
                         </div>
                         <div>
                             <p class="font-medium text-slate-800 text-sm">{{ tx.title }}</p>
-                            <p class="text-xs text-slate-500">{{ tx.note || 'ไม่มีหมายเหตุ' }}</p>
+                            <p class="text-xs text-slate-500">{{ tx.category || 'ไม่มีหมายเหตุ' }}</p>
                         </div>
                     </div>
                     <p class="font-bold text-sm" :class="tx.type === 'income' ? 'text-emerald-600' : 'text-slate-800'">
@@ -79,50 +82,53 @@
 </template>
 
 <script setup>
+import { ArrowDownRight, ArrowUpRight, LogOut as LogOutLucide } from 'lucide-vue-next'
+import { computed } from 'vue'
+
+const ArrowDownRightIcon = ArrowDownRight
+const ArrowUpRightIcon = ArrowUpRight
+const LogOutIcon = LogOutLucide
+
+/*
+    จาก login.vue เราจะมีการส่งข้อมูล username ลง useCookie('auth_username') เอาไว้
+    เราจะมีการเรียกใช้งาน cookie ตัวนั้นทีนี
+    สร้างตัวแปรชื่อ nameCookie มารับค่า cookie ที่อยู่ใน browser 
+    จากนั้นสร้างตัวแปรชื่อ UserName มารับค่า nameCookie.value โดยมีการทำ Default Value เอาไว้ 
+*/
+const nameCookie = useCookie('auth_username')
+const UserName = nameCookie.value || "ผู้ใช้"
 
 /*
     function สำหรับการทำระบบ Logout ออกจากระบบ
 */
 const LogOut = () => {
-    const auth = useCookie('auth_token')   // มีการรับค่าตัวแปร Token จากระบบ auth
-    auth.value = null                       // กำหนดค่าดังกล่าวให้มีค่าเท่ากับว่างเปล่า
+    const auth = useCookie('auth_token')
+    const name = useCookie('auth_username')
+    auth.value = null                       // ลบสติ๊กเกอร์ UserId
+    name.value = null                       // ลบสติ๊กเกอร์ Username
     navigateTo('/login')                    // มีการไปยังหน้า Login
 }
 
-
-import { ArrowDownRight, ArrowUpRight } from 'lucide-vue-next'
-
-import { ref, computed } from 'vue'
-
-
-const ArrowDownRightIcon = ArrowDownRight
-const ArrowUpRightIcon = ArrowUpRight
-const UserName = "Ohm"
-
-
-
-
-// กำหนด Key เป็น history-transactions เพื่อไม่ให้ไปชนกับหน้า Test 
-const { data: transactions, pending, error } = await useAsyncData('history-transactions', async () => {
-    const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-    if (error) throw error
-    return data
+// มีการดึง API จาก transaction.get.ts เพื่อขอข้อมูล transaction มาเพื่อแสดงในหน้าหลัก
+const { data: transactions, pending, error } = await useAsyncData('dashboard-transactions', async () => {
+    // มีการเรียกใช้งาน API เส้น transaction.get.ts
+    const response = await $fetch('/api/transaction')
+    return response || []
 })
 
+// ฟังก์ชันสำหรับการคำนวณรายรับ (income)
 const income = computed(() => {
     if (!transactions.value) return 0
     return transactions.value.reduce((acc, tx) => tx.type === 'income' ? acc + tx.amount : acc, 0)
 })
 
+// ฟังก์ชันสำหรับการคำนวณรายจ่าย (expense)
 const expense = computed(() => {
     if (!transactions.value) return 0
     return transactions.value.reduce((acc, tx) => tx.type !== 'income' ? acc + tx.amount : acc, 0)
 })
 
+// ฟังก์ชันสำหรับการคำนวณยอดคงเหลือ (balance)
 const balance = computed(() => income.value - expense.value)
 
 </script>
