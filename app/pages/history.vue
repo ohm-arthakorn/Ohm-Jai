@@ -39,11 +39,27 @@
                                     <p class="font-medium text-slate-800 text-sm truncate">{{ tx.category }}</p>
                                 </div>
                             </div>
-                            <div class="text-right shrink-0 ml-2">
+                            <div class="text-right shrink-0 ml-2 flex flex-col items-end gap-1">
                                 <p class="font-bold text-sm whitespace-nowrap"
                                     :class="tx.type === 'income' ? 'text-emerald-600' : 'text-slate-800'">
                                     {{ tx.type === 'income' ? '+' : '-' }}฿{{ Number(tx.amount).toLocaleString() }}
                                 </p>
+                                <!-- ปุ่มสำหรับแก้ไขและลบ (CRUD) -->
+                                <div class="flex gap-2 mt-1">
+                                    <!-- 
+                                        การใช้งาน NuxtLink จะมีความใกล้เคียงกับ <a href="..."> 
+                                        แต่ว่า NuxtLink จะไม่ต้องมีการ Refresh หน้าเว็บ เรียกว่า การทำ Client-Side Rendering        
+                                        มีการเขียนให้สามารถส่ง id ของรายการผ่าน URL หรือที่เรียกว่า Path Parameter API สำหรับการ Route ข้อมูลง่าย ๆ ด้วย
+                                    -->
+                                    <NuxtLink :to="`/edit/${tx.id}`" class="text-slate-400 hover:text-blue-500 transition-colors" title="แก้ไขรายการ">
+                                        <EditIcon class="w-4 h-4" />
+                                    </NuxtLink>
+                                    
+                                    <!-- ปุ่มสำหรับการลบข้อมูล มีการใช้งาน function delateTransaction(id) -->
+                                    <button @click="deleteTransaction(tx.id)" class="text-slate-400 hover:text-red-500 transition-colors" title="ลบรายการ">
+                                        <DeleteIcon class="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -54,15 +70,35 @@
 </template>
 
 <script setup>
-import { ArrowDownRight, ArrowUpRight } from 'lucide-vue-next'
+import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
-// สร้างตัวแปรสำหรับการเก็บ Icon ลูกศรขึ้นและลูกศรลง
+// สร้างตัวแปรสำหรับการเก็บ Icon สำหรับใช้งานในรูปแบบ Component
 const ArrowDownRightIcon = ArrowDownRight
 const ArrowUpRightIcon = ArrowUpRight
+const EditIcon = Pencil
+const DeleteIcon = Trash2
+
+// ฟังก์ชันสำหรับส่งคำสั่งลบข้อมูลไปยังหลังบ้าน (API)
+const deleteTransaction = async (id) => {
+    // แสดงหน้าต่างยืนยันการลบเพื่อป้องกันการกดผิด
+    const confirmDelete = confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')
+    if (!confirmDelete) return
+    try {
+        // ยิง API แบบ DELETE ไปพร้อมกับแนบรหัสรายการไว้ที่ URL (เช่น /api/transaction/5)
+        await $fetch(`/api/transaction/${id}`, {
+            method: 'DELETE'
+        })
+        alert('ลบข้อมูลสำเร็จ!')
+        refresh() // โหลดข้อมูลรายการใหม่มาแสดงโดยอัตโนมัติ หลังบ้านลบเสร็จเราก็รีเฟรชหน้าบ้าน
+    } catch (err) {
+        alert('เกิดข้อผิดพลาดในการลบข้อมูล')
+    }
+}
 
 // สร้าง function สำหรับการรับข้อมูลโดย API transaction.get.ts มายังตัวแปรนี้ 
-const { data: transactions, pending, error } = await useAsyncData('history-all-transactions', async () => {
+// ดึงตัวแปร refresh() มาใช้ด้วย เพื่อเอาไว้สั่งให้โหลดข้อมูลอีกรอบตอนลบรายการเสร็จ
+const { data: transactions, pending, error, refresh } = await useAsyncData('history-all-transactions', async () => {
     /*
         $fetch คือ function สำหรับการเรียก API จาก API เส้นที่มีการเขียนเอง หรือมาจากเว็บไซต์อื่น ๆ
     */
