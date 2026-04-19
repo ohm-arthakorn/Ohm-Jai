@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     
     // 2. ถ้ายังไม่ได้ Login ให้โยน Error 401 กลับไป
     if (!authCookie) {
-      throw createError({ statusCode: 401, message: 'กรุณาเข้าสู่ระบบก่อนครับ' })
+      throw createError({ statusCode: 401, message: 'กรุณาเข้าสู่ระบบก่อน' })
     }
     
     // แปลงข้อความที่อยู่ใน Cookie ให้กลายเป็นตัวเลข (Integer) ไว้ค้นหาในฐานข้อมูล

@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   // อ่าน Cookie เพื่อดูว่าใครคือผู้ใช้งานปัจจุบัน auth_token คือ UserId
   const authCookie = getCookie(event, 'auth_token')
   if (!authCookie) {
-    throw createError({ statusCode: 401, message: 'กรุณาเข้าสู่ระบบก่อนครับ' })
+    throw createError({ statusCode: 401, message: 'กรุณาเข้าสู่ระบบก่อน' })
   }
   const currentUserId = parseInt(authCookie)
 
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     throw createError({
       statusCode: 500,
-      message: 'บันทึกข้อมูลไม่สำเร็จค่ะโอม',
+      message: 'บันทึกข้อมูลไม่สำเร็จ',
     })
   }
 })
